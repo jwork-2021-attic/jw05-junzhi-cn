@@ -57,7 +57,7 @@ public class Main extends JFrame implements KeyListener {
         app.setVisible(true);
         while (true){
             try { 
-                Thread.sleep(30);
+                Thread.sleep(100);
                 app.repaint();
             } catch (Exception e) { 
                 System.out.println("err"); 
