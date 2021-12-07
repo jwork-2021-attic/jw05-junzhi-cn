@@ -40,6 +40,12 @@ public class World {
     }
     public void end()
     {
+        alive=false;
+        try { 
+            Thread.sleep(500);
+        } catch (Exception e) { 
+            System.out.println("err"); 
+        }
         for(int i=0;i<this.WIDTH;i++)
         {
             for(int j=0;j<this.HEIGHT;j++)
@@ -50,7 +56,6 @@ public class World {
         String message="You\0are\0dead!!";
         for(int i=0;i<message.length();i++)
         put(new Thing(Color.red, message.charAt(i), this), this.WIDTH/4+i, this.HEIGHT/3);
-        alive=false;
     }
     public boolean isAlive()
     {

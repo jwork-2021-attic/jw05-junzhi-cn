@@ -78,6 +78,14 @@ public class Mono implements Runnable {
                         default:
                             break;
                     }
+                    if (world.get(xPos+1, yPos).isPlayer())
+                    world.get(xPos+1, yPos).getHurt(10);
+                    if (world.get(xPos-1, yPos).isPlayer())
+                    world.get(xPos+1, yPos).getHurt(10);
+                    if (world.get(xPos, yPos+1).isPlayer())
+                    world.get(xPos+1, yPos).getHurt(10);
+                    if (world.get(xPos, yPos-1).isPlayer())
+                    world.get(xPos+1, yPos).getHurt(10);
                     try { 
                         Thread.sleep(500);
                     } catch (Exception e) { 
