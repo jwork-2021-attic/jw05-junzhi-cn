@@ -1,6 +1,7 @@
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import my.runo.*;
 import javax.swing.JFrame;
 
 import com.anish.calabashbros.World;
@@ -17,12 +18,13 @@ public class Main extends JFrame implements KeyListener {
 
     public Main() {
         super();
-        terminal = new AsciiPanel(World.WIDTH, World.HEIGHT, AsciiFont.TALRYTH_15_15);
+        terminal = new AsciiPanel(World.WIDTH, World.HEIGHT, AsciiFont.MyTest);
         add(terminal);
         pack();
         screen = new WorldScreen();
         addKeyListener(this);
         repaint();
+        
 
     }
 
@@ -53,6 +55,14 @@ public class Main extends JFrame implements KeyListener {
         Main app = new Main();
         app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         app.setVisible(true);
+        while (true){
+            try { 
+                Thread.sleep(30);
+                app.repaint();
+            } catch (Exception e) { 
+                System.out.println("err"); 
+            }
+        }
     }
 
 }

@@ -2,64 +2,115 @@ package com.anish.screen;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
-import com.anish.calabashbros.World;
-import com.anish.calabashbros.Player;
-import com.anish.calabashbros.Thing;
-import com.anish.calabashbros.Wall;
-import com.anish.calabashbros.Floor;
-import generator.MazeGenerator;
+import com.anish.calabashbros.*;
+
+import my.runo.*;
 
 import asciiPanel.AsciiPanel;
+
+import java.util.Random;
 
 public class WorldScreen implements Screen {
 
     private World world;
-    private Player player;
-    private int[][] maze;
+    protected Player player;
+    private int[][] map;
     public static final int LEN = 20;
 
     public WorldScreen() {
-        MazeGenerator mazeGenerator = new MazeGenerator(LEN);
-        mazeGenerator.generateMaze();
-        maze = mazeGenerator.getMaze();
         world = new World();
-        player = new Player(Color.WHITE, world, 0, 0);
-        world.put(player, 0, 0);
+        map=new int[LEN+1][LEN+1];
+        // for(int i=0;i<256;i++)
+        // {    
+        // Thing thing;
+        // thing=new Thing(Color.WHITE, (char) i, world);
+        // world.put(thing, i%16, i/16);
+        // }
+        Random r = new Random();
+        for(int i=0;i<=LEN;i++)
+        {
+            for(int j=0;j<=LEN;j++)
+            {
+                if(i==0||i==LEN||j==0||j==LEN)
+                {
+                    map[i][j]=5;
+                    world.put(new Wall(world), i, j);
+                }
+                else
+                map[i][j]=0;
+            }
+        }
+        for(int i=0;i<this.world.WIDTH;i++)
+        {
+            for(int j=LEN+1;j<this.world.HEIGHT;j++)
+            {
+                world.put(new Thing(Color.black, (char)32, this.world), i, j);
+            }
+        }
+        for(int i=LEN+1;i<this.world.WIDTH;i++)
+        {
+            for(int j=0;j<this.world.HEIGHT;j++)
+            {
+                world.put(new Thing(Color.black, (char)32, this.world), i, j);
+            }
+        }
+        for(int i=0;i<20;i++)
+        {
+            int wx=r.nextInt(LEN-1)+1;
+            int wy=r.nextInt(LEN-1)+1;
+            map[wx][wy]=5;
+            world.put(new Wall(world), wx, wy);
+        }
+        for(int i=0;i<10;i++)
+        {
+            int wx=r.nextInt(LEN-1)+1;
+            int wy=r.nextInt(LEN-1)+1;
+            map[wx][wy]=4;
+            world.put(new Thorn(world), wx, wy);
+        }
+        for(int i=0;i<10;i++)
+        {
+            int wx=r.nextInt(LEN-1)+1;
+            int wy=r.nextInt(LEN-1)+1;
+            map[wx][wy]=3;
+            world.put(new Grass(world), wx, wy);
+        }
+        int wx=r.nextInt(LEN-1)+1;
+        int wy=r.nextInt(LEN-1)+1;
+        map[wx][wy]=2;
+        world.put(new Sword(world), wx, wy);
+        do{
+        wx=r.nextInt(LEN-1)+1;
+        wy=r.nextInt(LEN-1)+1;
+        }
+        while(map[wx][wy]==2);
+        map[wx][wy]=1;
+        world.put(new Shield(world), wx, wy);
+        int px,py;
+        do{
+        px=r.nextInt(LEN-1)+1;
+        py=r.nextInt(LEN-1)+1;}
+        while(map[px][py]==2||map[px][py]==1);
+        player = new Player(Color.WHITE, world, px, py);
+        world.put(player, px, py);
+        
+
+        Thread autoput =new Thread(new AutoPut(world));
+        autoput.start();
+
     }
 
-    private void showPath()
-    {
-        for(int i = 0; i < maze.length; i++){
-            for(int j = 0; j < maze[0].length; j++){
-                if(maze[i][j] == 1 && world.get(i, j).getGlyph()==((char) 250)){
-                        world.put(new Thing(world.get(i, j).getColor(), (char) 9, world), i, j);
-                }
-            }
-        }
-    }
-    private void disPath()
-    {
-        for(int i = 0; i < maze.length; i++){
-            for(int j = 0; j < maze[0].length; j++){
-                if(maze[i][j] == 1 && world.get(i, j).getGlyph()==((char) 9)){
-                    if( world.get(i, j).getColor()==Color.GRAY)
-                    {
-                        world.put(new Floor(world), i, j);
-                    }
-                    else
-                    {
-                        world.put(new Thing(world.get(i, j).getColor(), (char) 250, world), i, j);
-                    }
-                }
-            }
-        }
-    }
+    
     private boolean isOK(int xPos, int yPos){
-        if(xPos >= 0 && xPos < LEN && yPos >= 0 && yPos < LEN && maze[xPos][yPos] != 0){
+        if(xPos >= 0 && xPos < LEN && yPos >= 0 && yPos < LEN && world.get(xPos,yPos).getGlyph()!=(char) 177 &&!world.get(xPos,yPos).isPlayer() && !world.get(xPos,yPos).isMon() ){
             return true;
         }
-        world.put(new Wall(world), xPos, yPos);
         return false;
+    }
+    public int getMap(int xPos, int yPos){
+        if(xPos<=LEN && xPos>=0 && yPos<=LEN && yPos>=0)
+        return map[xPos][yPos];
+        else return -1;
     }
 
     @Override
@@ -76,23 +127,54 @@ public class WorldScreen implements Screen {
     int i = 0;
 
     @Override
-    public Screen respondToUserInput(KeyEvent key) {
+    public synchronized Screen respondToUserInput(KeyEvent key) {
         int xPos = player.getxPos();
         int yPos = player.getyPos();
+        if(world.isAlive())
         switch(key.getKeyCode()){
             case 69://E
-                player.changec();
-                disPath();
+                Thread att =new Thread(new PlayerAtt(player));
+                att.start();
                 break;
-            case 81://E
+            case 81://Q
                 player.changes();
-                disPath();
                 break;
             case 0x20://space
-                showPath();
+                if(player.getDir()==1)
+                {
+                    if(isOK(xPos, yPos - player.getMov())){
+                        player.moveTo(xPos, yPos - player.getMov());
+                        player.setxPos(xPos);
+                        player.setyPos(yPos - player.getMov());
+                    }
+                }
+                else if(player.getDir()==2)
+                {
+                    if(isOK(xPos, yPos + player.getMov())){
+                        player.moveTo(xPos, yPos + player.getMov());
+                        player.setxPos(xPos);
+                        player.setyPos(yPos + player.getMov());
+                    }
+                }
+                else if(player.getDir()==3)
+                {
+                    if(isOK(xPos - player.getMov(), yPos)){
+                        player.moveTo(xPos - player.getMov(), yPos);
+                        player.setxPos(xPos - player.getMov());
+                        player.setyPos(yPos);
+                    }
+                }
+                else if(player.getDir()==4)
+                {
+                    if(isOK(xPos + player.getMov(), yPos)){
+                        player.moveTo(xPos + player.getMov(), yPos);
+                        player.setxPos(xPos + player.getMov());
+                        player.setyPos(yPos);
+                    }
+                }
                 break;
             case 0x25://←
-                disPath();
+                    player.setlr(-1);
                 if(isOK(xPos - 1, yPos)){
                     player.moveTo(xPos - 1, yPos);
                     player.setxPos(xPos - 1);
@@ -100,7 +182,7 @@ public class WorldScreen implements Screen {
                 }
                 break;
             case 0x26://↑
-                disPath();
+                    player.setud(1);
                 if(isOK(xPos, yPos - 1)){
                     player.moveTo(xPos, yPos - 1);
                     player.setxPos(xPos);
@@ -108,7 +190,7 @@ public class WorldScreen implements Screen {
                 }
                 break;
             case 0x27://→
-                disPath();
+                    player.setlr(1);
                 if(isOK(xPos + 1, yPos)){
                     player.moveTo(xPos + 1, yPos);
                     player.setxPos(xPos + 1);
@@ -116,7 +198,7 @@ public class WorldScreen implements Screen {
                 }
                 break;
             case 0x28://↓
-                disPath();
+                    player.setud(-1);
                 if(isOK(xPos, yPos + 1)){
                     player.moveTo(xPos, yPos + 1);
                     player.setxPos(xPos);
@@ -124,8 +206,13 @@ public class WorldScreen implements Screen {
                 }
                 break;
             default:
-                disPath();
                 break;
+                
+        }
+        try { 
+            Thread.sleep(100);
+        } catch (Exception e) { 
+            System.out.println("err"); 
         }
         return this;
     }

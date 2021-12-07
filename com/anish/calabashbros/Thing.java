@@ -8,6 +8,18 @@ public class Thing {
 
     public Tile<? extends Thing> tile;
 
+    public boolean isDead()
+    {
+        return false;
+    }
+    public boolean isPlayer()
+    {
+        return false;
+    }
+    public boolean isMon()
+    {
+        return false;
+    }
     public int getX() {
         return this.tile.getxPos();
     }
@@ -18,6 +30,10 @@ public class Thing {
 
     public void setTile(Tile<? extends Thing> tile) {
         this.tile = tile;
+    }
+    public void getHurt(int num)
+    {
+
     }
 
     public Thing(Color color, char glyph, World world) {
@@ -36,23 +52,5 @@ public class Thing {
 
     public char getGlyph() {
         return this.glyph;
-    }
-    public void changec(){
-        int r=(int) (System.currentTimeMillis()%(256));
-
-        try { 
-            Thread.sleep(100);
-         } catch (Exception e) { 
-             System.out.println("err"); 
-         }
-        int g=(int) (System.currentTimeMillis()%(256));
-
-        try { 
-            Thread.sleep(100);
-         } catch (Exception er) { 
-             System.out.println("err"); 
-         }
-        int b=(int) (System.currentTimeMillis()%(256));
-        this.color=new Color(r, g, b);
     }
 }
